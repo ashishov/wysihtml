@@ -476,7 +476,7 @@
           }, 0);
           return;
         }
-        if (that.config.useLineBreaks && keyCode === wysihtml.ENTER_KEY && !wysihtml.browser.insertsLineBreaksOnReturn()) {
+        if (that.config.useLineBreaks && keyCode === wysihtml.ENTER_KEY) {
           event.preventDefault();
           that.commands.exec("insertLineBreak");
         }

@@ -12134,7 +12134,7 @@ wysihtml.Commands = Base.extend(
 
   function getOptions(value) {
     var options = typeof value === 'object' ? value : {'href': value};
-    return wysihtml.lang.object({}).merge(nodeOptions).merge({'attribute': value}).get();
+    return wysihtml.lang.object({}).merge(nodeOptions).merge({'attribute': options}).get();
   }
 
   wysihtml.commands.createLink  = {
@@ -14765,7 +14765,7 @@ wysihtml.views.View = Base.extend(
           }, 0);
           return;
         }
-        if (that.config.useLineBreaks && keyCode === wysihtml.ENTER_KEY && !wysihtml.browser.insertsLineBreaksOnReturn()) {
+        if (that.config.useLineBreaks && keyCode === wysihtml.ENTER_KEY) {
           event.preventDefault();
           that.commands.exec("insertLineBreak");
         }

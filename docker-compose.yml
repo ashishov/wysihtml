@@ -1,0 +1,11 @@
+version: '3.3'
+
+services:
+  nodejs:  
+    image: arkasha/node8-gulp-grunt
+    user: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./:/home/node/app
