@@ -28,170 +28,220 @@
  *      });
  *    </script>
  */
-(function(wysihtml) {
-  var dom                     = wysihtml.dom,
-      CLASS_NAME_OPENED       = "wysihtml-command-dialog-opened",
-      SELECTOR_FORM_ELEMENTS  = "input, select, textarea",
-      SELECTOR_FIELDS         = "[data-wysihtml-dialog-field]",
-      ATTRIBUTE_FIELDS        = "data-wysihtml-dialog-field";
+(function (wysihtml) {
+    var dom                    = wysihtml.dom,
+        CLASS_NAME_OPENED      = "wysihtml-command-dialog-opened",
+        SELECTOR_FORM_ELEMENTS = "input, select, textarea",
+        SELECTOR_FIELDS        = "[data-wysihtml-dialog-field]",
+        ATTRIBUTE_FIELDS       = "data-wysihtml-dialog-field";
 
 
-  wysihtml.toolbar.Dialog = wysihtml.lang.Dispatcher.extend(
-    /** @scope wysihtml.toolbar.Dialog.prototype */ {
-    constructor: function(link, container) {
-      this.link       = link;
-      this.container  = container;
-    },
+    wysihtml.toolbar.Dialog = wysihtml.lang.Dispatcher.extend(
+        /** @scope wysihtml.toolbar.Dialog.prototype */ {
+            constructor: function (link, container) {
+                this.link      = link;
+                this.container = container;
+            },
 
-    _observe: function() {
-      if (this._observed) {
-        return;
-      }
+            _observe: function () {
+                if (this._observed) {
+                    return;
+                }
 
-      var that = this,
-          callbackWrapper = function(event) {
-            var attributes = that._serialize();
-            that.fire("save", attributes);
-            that.hide();
-            event.preventDefault();
-            event.stopPropagation();
-          };
+                var that            = this,
+                    callbackWrapper = function (event) {
+                        var attributes = that._serialize();
+                        that.fire("save", attributes);
+                        that.hide();
+                        event.preventDefault();
+                        event.stopPropagation();
+                    };
 
-      dom.observe(that.link, "click", function() {
-        if (dom.hasClass(that.link, CLASS_NAME_OPENED)) {
-          setTimeout(function() { that.hide(); }, 0);
-        }
-      });
+                dom.observe(that.link, "click", function () {
+                    if (dom.hasClass(that.link, CLASS_NAME_OPENED)) {
+                        setTimeout(function () {
+                            that.hide();
+                        }, 0);
+                    }
+                });
 
-      dom.observe(this.container, "keydown", function(event) {
-        var keyCode = event.keyCode;
-        if (keyCode === wysihtml.ENTER_KEY) {
-          callbackWrapper(event);
-        }
-        if (keyCode === wysihtml.ESCAPE_KEY) {
-          that.cancel();
-        }
-      });
+                dom.observe(this.container, "keydown", function (event) {
+                    var keyCode = event.keyCode;
+                    if (keyCode === wysihtml.ENTER_KEY) {
+                        callbackWrapper(event);
+                    }
+                    if (keyCode === wysihtml.ESCAPE_KEY) {
+                        that.cancel();
+                    }
+                });
 
-      dom.delegate(this.container, "[data-wysihtml-dialog-action=save]", "click", callbackWrapper);
+                dom.delegate(this.container, "[data-wysihtml-dialog-action=save]", "click", callbackWrapper);
 
-      dom.delegate(this.container, "[data-wysihtml-dialog-action=cancel]", "click", function(event) {
-        that.cancel();
-        event.preventDefault();
-        event.stopPropagation();
-      });
+                dom.delegate(this.container, "[data-wysihtml-dialog-action=cancel]", "click", function (event) {
+                    that.cancel();
+                    event.preventDefault();
+                    event.stopPropagation();
+                });
 
-      this._observed = true;
-    },
+                this._observed = true;
+            },
 
-    /**
-     * Grabs all fields in the dialog and puts them in key=>value style in an object which
-     * then gets returned
-     */
-    _serialize: function() {
-      var data    = {},
-          fields  = this.container.querySelectorAll(SELECTOR_FIELDS),
-          length  = fields.length,
-          i       = 0;
+            /**
+             * Grabs all fields in the dialog and puts them in key=>value style in an object which
+             * then gets returned
+             */
+            _serialize: function () {
+                var data   = {},
+                    fields = this.container.querySelectorAll(SELECTOR_FIELDS),
+                    length = fields.length,
+                    i      = 0;
 
-      for (; i<length; i++) {
-        data[fields[i].getAttribute(ATTRIBUTE_FIELDS)] = fields[i].value;
-      }
-      return data;
-    },
+                for (; i < length; i++) {
+                    var field = fields[i];
 
-    /**
-     * Takes the attributes of the "elementToChange"
-     * and inserts them in their corresponding dialog input fields
-     *
-     * Assume the "elementToChange" looks like this:
-     *    <a href="http://www.google.com" target="_blank">foo</a>
-     *
-     * and we have the following dialog:
-     *    <input type="text" data-wysihtml-dialog-field="href" value="">
-     *    <input type="text" data-wysihtml-dialog-field="target" value="">
-     *
-     * after calling _interpolate() the dialog will look like this
-     *    <input type="text" data-wysihtml-dialog-field="href" value="http://www.google.com">
-     *    <input type="text" data-wysihtml-dialog-field="target" value="_blank">
-     *
-     * Basically it adopted the attribute values into the corresponding input fields
-     *
-     */
-    _interpolate: function(avoidHiddenFields) {
-      var field,
-          fieldName,
-          newValue,
-          focusedElement = document.querySelector(":focus"),
-          fields         = this.container.querySelectorAll(SELECTOR_FIELDS),
-          length         = fields.length,
-          i              = 0;
-      for (; i<length; i++) {
-        field = fields[i];
+                    switch (field.tagName) {
+                        case 'SELECT':
+                            if (-1 !== field.selectedIndex) {
+                                data[fields[i].getAttribute(ATTRIBUTE_FIELDS)] = field.options[field.selectedIndex].value;
+                            }
+                            break;
+                        case 'INPUT':
+                            switch (field.type) {
+                                case 'checkbox':
+                                case 'radio':
+                                    if (field.checked) {
+                                        data[fields[i].getAttribute(ATTRIBUTE_FIELDS)] = fields[i].value;
+                                    }
+                                    break;
+                                default:
+                                    data[fields[i].getAttribute(ATTRIBUTE_FIELDS)] = fields[i].value;
+                                    break;
+                            }
+                            break;
+                    }
+                }
+                return data;
+            },
 
-        // Never change elements where the user is currently typing in
-        if (field === focusedElement) {
-          continue;
-        }
+            /**
+             * Takes the attributes of the "elementToChange"
+             * and inserts them in their corresponding dialog input fields
+             *
+             * Assume the "elementToChange" looks like this:
+             *    <a href="http://www.google.com" target="_blank">foo</a>
+             *
+             * and we have the following dialog:
+             *    <input type="text" data-wysihtml-dialog-field="href" value="">
+             *    <input type="text" data-wysihtml-dialog-field="target" value="">
+             *
+             * after calling _interpolate() the dialog will look like this
+             *    <input type="text" data-wysihtml-dialog-field="href" value="http://www.google.com">
+             *    <input type="text" data-wysihtml-dialog-field="target" value="_blank">
+             *
+             * Basically it adopted the attribute values into the corresponding input fields
+             *
+             */
+            _interpolate: function (avoidHiddenFields) {
+                var field,
+                    fieldName,
+                    newValue,
+                    focusedElement = document.querySelector(":focus"),
+                    fields         = this.container.querySelectorAll(SELECTOR_FIELDS),
+                    length         = fields.length,
+                    i              = 0;
+                for (; i < length; i++) {
+                    field = fields[i];
 
-        // Don't update hidden fields
-        // See https://github.com/xing/wysihtml5/pull/14
-        if (avoidHiddenFields && field.type === "hidden") {
-          continue;
-        }
+                    // Never change elements where the user is currently typing in
+                    if (field === focusedElement) {
+                        continue;
+                    }
 
-        fieldName = field.getAttribute(ATTRIBUTE_FIELDS);
-        newValue  = (this.elementToChange && typeof(this.elementToChange) !== 'boolean') ? (this.elementToChange.getAttribute(fieldName) || "") : field.defaultValue;
-        field.value = newValue;
-      }
-    },
+                    // Don't update hidden fields
+                    // See https://github.com/xing/wysihtml5/pull/14
+                    if (avoidHiddenFields && field.type === "hidden") {
+                        continue;
+                    }
 
-    update: function (elementToChange) {
-      this.elementToChange = elementToChange ? elementToChange : this.elementToChange;
-      this._interpolate();
-    },
+                    var defaultValue = field.defaultValue;
 
-    /**
-     * Show the dialog element
-     */
-    show: function(elementToChange) {
-      var firstField  = this.container.querySelector(SELECTOR_FORM_ELEMENTS);
+                    if (('checkbox' === field.type || 'radio' === field.type) && false === field.defaultChecked) {
+                        defaultValue = '';
+                    }
 
-      this._observe();
-      this.update(elementToChange);
+                    fieldName = field.getAttribute(ATTRIBUTE_FIELDS);
+                    newValue  = (this.elementToChange && typeof(this.elementToChange) !== 'boolean') ? (this.elementToChange.getAttribute(fieldName) || "") : defaultValue;
 
-      dom.addClass(this.link, CLASS_NAME_OPENED);
-      this.container.style.display = "";
-      this.isOpen = true;
-      this.fire("show");
+                    switch (field.tagName) {
+                        case 'SELECT':
+                            field.value = newValue;
+                            break;
+                        case 'INPUT':
+                            switch (field.type) {
+                                case 'checkbox':
+                                case 'radio':
+                                    if (newValue) {
+                                        field.checked = true;
+                                    } else {
+                                        field.checked = false;
+                                    }
+                                    break;
+                                default:
+                                    field.value = newValue;
+                                    break;
+                            }
+                            break;
+                    }
+                }
+            },
 
-      if (firstField && !elementToChange) {
-        try {
-          firstField.focus();
-        } catch(e) {}
-      }
-    },
+            update: function (elementToChange) {
+                this.elementToChange = elementToChange ? elementToChange : this.elementToChange;
+                this._interpolate();
+            },
 
-    /**
-     * Hide the dialog element
-     */
-    _hide: function(focus) {
-      this.elementToChange = null;
-      dom.removeClass(this.link, CLASS_NAME_OPENED);
-      this.container.style.display = "none";
-      this.isOpen = false;
-    },
+            /**
+             * Show the dialog element
+             */
+            show: function (elementToChange) {
+                var firstField = this.container.querySelector(SELECTOR_FORM_ELEMENTS);
 
-    hide: function() {
-      this._hide();
-      this.fire("hide");
-    },
+                this._observe();
+                this.update(elementToChange);
 
-    cancel: function() {
-      this._hide();
-      this.fire("cancel");
-    }
-  });
+                dom.addClass(this.link, CLASS_NAME_OPENED);
+                this.container.style.display = "";
+                this.isOpen                  = true;
+                this.fire("show");
+
+                if (firstField && !elementToChange) {
+                    try {
+                        firstField.focus();
+                    } catch (e) {
+                    }
+                }
+            },
+
+            /**
+             * Hide the dialog element
+             */
+            _hide: function (focus) {
+                this.elementToChange = null;
+                dom.removeClass(this.link, CLASS_NAME_OPENED);
+                this.container.style.display = "none";
+                this.isOpen                  = false;
+            },
+
+            hide: function () {
+                this._hide();
+                this.fire("hide");
+            },
+
+            cancel: function () {
+                this._hide();
+                this.fire("cancel");
+            }
+        });
 })(wysihtml); //jshint ignore:line
 
 (function(wysihtml) {
