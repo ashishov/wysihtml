@@ -97,7 +97,7 @@
                     i      = 0;
 
                 for (; i < length; i++) {
-                    var field = fields[i];
+                    var field                                      = fields[i];
                     data[fields[i].getAttribute(ATTRIBUTE_FIELDS)] = "";
 
                     switch (field.tagName) {
@@ -166,12 +166,19 @@
 
                     var defaultValue = field.defaultValue;
 
-                    if (('checkbox' === field.type || 'radio' === field.type) && false === field.defaultChecked) {
+                    if ('SELECT' === field.tagName) {
+                        for (var i = 0; i < field.options.length; i++) {
+                            if (field.options[i].defaultSelected == true) {
+                                defaultValue = field.options[i].value;
+                                break;
+                            }
+                        }
+                    } else if (('checkbox' === field.type || 'radio' === field.type) && false === field.defaultChecked) {
                         defaultValue = '';
                     }
 
                     fieldName = field.getAttribute(ATTRIBUTE_FIELDS);
-                    newValue  = (this.elementToChange && typeof(this.elementToChange) !== 'boolean') ? (this.elementToChange.getAttribute(fieldName) || "") : defaultValue;
+                    newValue  = (this.elementToChange && typeof (this.elementToChange) !== 'boolean') ? (this.elementToChange.getAttribute(fieldName) || "") : defaultValue;
 
                     switch (field.tagName) {
                         case 'SELECT':
@@ -182,7 +189,6 @@
                             switch (field.type) {
                                 case 'checkbox':
                                 case 'radio':
-                                    // console.log(newValue)
                                     if (newValue) {
                                         field.checked = true;
                                     } else {
