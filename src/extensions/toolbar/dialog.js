@@ -169,13 +169,14 @@
                     if (('checkbox' === field.type || 'radio' === field.type) && false === field.defaultChecked) {
                         defaultValue = '';
                     }
-// console.log('defaultValue', defaultValue)
+
                     fieldName = field.getAttribute(ATTRIBUTE_FIELDS);
                     newValue  = (this.elementToChange && typeof(this.elementToChange) !== 'boolean') ? (this.elementToChange.getAttribute(fieldName) || "") : defaultValue;
 
                     switch (field.tagName) {
                         case 'SELECT':
                             field.value = newValue;
+                            field.dispatchEvent(new Event('change'));
                             break;
                         case 'INPUT':
                             switch (field.type) {
