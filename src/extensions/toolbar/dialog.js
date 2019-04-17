@@ -39,7 +39,7 @@
     wysihtml.toolbar.Dialog = wysihtml.lang.Dispatcher.extend(
         /** @scope wysihtml.toolbar.Dialog.prototype */ {
             constructor: function (link, container) {
-                this.link      = link;
+                this.link = link;
                 this.container = container;
             },
 
@@ -97,7 +97,8 @@
                     i      = 0;
 
                 for (; i < length; i++) {
-                    var field                                      = fields[i];
+                    var field = fields[i];
+
                     data[fields[i].getAttribute(ATTRIBUTE_FIELDS)] = "";
 
                     switch (field.tagName) {
@@ -167,8 +168,8 @@
                     var defaultValue = field.defaultValue;
 
                     if ('SELECT' === field.tagName) {
-                        for (var i = 0; i < field.options.length; i++) {
-                            if (field.options[i].defaultSelected == true) {
+                        for (var k = 0; k < field.options.length; k++) {
+                            if (field.options[k].defaultSelected == true) {
                                 defaultValue = field.options[i].value;
                                 break;
                             }
@@ -178,7 +179,7 @@
                     }
 
                     fieldName = field.getAttribute(ATTRIBUTE_FIELDS);
-                    newValue  = (this.elementToChange && typeof (this.elementToChange) !== 'boolean') ? (this.elementToChange.getAttribute(fieldName) || "") : defaultValue;
+                    newValue = (this.elementToChange && typeof (this.elementToChange) !== 'boolean') ? (this.elementToChange.getAttribute(fieldName) || "") : defaultValue;
 
                     switch (field.tagName) {
                         case 'SELECT':
@@ -220,7 +221,7 @@
 
                 dom.addClass(this.link, CLASS_NAME_OPENED);
                 this.container.style.display = "";
-                this.isOpen                  = true;
+                this.isOpen = true;
                 this.fire("show");
 
                 if (firstField && !elementToChange) {
@@ -238,7 +239,7 @@
                 this.elementToChange = null;
                 dom.removeClass(this.link, CLASS_NAME_OPENED);
                 this.container.style.display = "none";
-                this.isOpen                  = false;
+                this.isOpen = false;
             },
 
             hide: function () {

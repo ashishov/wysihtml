@@ -1,7 +1,7 @@
 version: '3.3'
 
 services:
-  nodejs:  
+  node:
     image: arkasha/node8-gulp-grunt
     user: "node"
     working_dir: /home/node/app
