@@ -170,7 +170,7 @@
                     if ('SELECT' === field.tagName) {
                         for (var k = 0; k < field.options.length; k++) {
                             if (field.options[k].defaultSelected == true) {
-                                defaultValue = field.options[i].value;
+                                defaultValue = field.options[k].value;
                                 break;
                             }
                         }
